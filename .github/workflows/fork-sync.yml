@@ -16,7 +16,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync main with upstream
+      - name: Sync master with upstream
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
@@ -25,4 +25,4 @@ jobs:
             --method POST \
             -H "Accept: application/vnd.github+json" \
             "repos/${GH_REPO}/merge-upstream" \
-            -f branch=main
+            -f branch=master
