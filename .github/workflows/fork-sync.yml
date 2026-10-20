@@ -21,8 +21,27 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            "repos/${GH_REPO}/merge-upstream" \
-            -f branch=master
+          set +e
+          output=$(
+            gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              "repos/${GH_REPO}/merge-upstream" \
+              -f branch=master 2>&1
+          )
+          status=$?
+          set -e
+
+          if [ $status -eq 0 ]; then
+            echo "$output"
+            exit 0
+          fi
+
+          if echo "$output" | grep -Fq 'without `workflows` permission'; then
+            echo "::warning::Upstream sync includes workflow file changes that GITHUB_TOKEN cannot apply without workflows permission. Skipping automatic sync for this run."
+            echo "$output"
+            exit 0
+          fi
+
+          echo "$output"
+          exit $status
